@@ -1,12 +1,41 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
-
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+ 
 class Authentication extends CI_Controller {
 
      function __construct()
      {
           parent::__construct();
           $this->load->model('Authentication_model', 'emp'); 
+     }
+
+
+     public function export()
+     {
+          $spreadsheet = new Spreadsheet();
+          $sheet = $spreadsheet->getActiveSheet();
+          $res= $this->emp->export();
+        
+          $i = 1;
+         foreach ($res as $result)
+         {
+               $sheet->setCellValue('A'.$i,$result['id']);
+               $sheet->setCellValue('B'.$i,$result['name']);
+               $sheet->setCellValue('C'.$i,$result['email']);
+               $sheet->setCellValue('D'.$i,$result['place']);
+               $i++;
+         }
+         
+          $writer = new Xlsx($spreadsheet);
+          $filename='export.xls'; 
+          header('Content-Type: application/vnd.ms-excel'); 
+          header('Content-Disposition: attachment;filename="'.$filename.'"'); 
+          header('Cache-Control: max-age=0');
+          $writer->save('php://output');
+  
+     
      }
     
     /* function for login validation*/     
@@ -85,9 +114,23 @@ class Authentication extends CI_Controller {
 
      public function dispdata()
      {
+              $token=$this->input->post('token'); 
+         
                /* function for display records*/ 
-               $result=$this->emp->displayrecords();
-               echo json_encode($result);
+               $result=$this->emp->displayrecords($token);
+               if($result!=FALSE)
+               {
+                    echo json_encode($result);   
+               }
+               else
+               {
+                $err=array(
+                     'error_code'=>"404",
+                      'error_message'=>"No data found"
+                );  
+                echo json_encode($err);  
+               }
+               
       }
 } 
  

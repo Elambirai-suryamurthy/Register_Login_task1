@@ -37,11 +37,26 @@ class Authentication_model extends CI_Model
           return true;
      }
 
-     /* function for display records*/ 
-     function displayrecords()
+
+     function export()
      {
-          $query=$this->db->query("select name from login1");
-          return $query->result();
+         $query =$this->db->query("select id,name,email,place from login1");
+         return $query->result_array();
+     }
+     /* function for display records*/ 
+     function displayrecords($token)
+     {
+          $this->db->where('token', $token);
+          $query=$this->db->get('authtoken1');
+          if($query->num_rows()>0)
+          {
+          $query1=$this->db->query("select name,email,place from login1");
+          return $query1->result();
+          }
+          else 
+          {
+               return false;
+          }
      }
      /* function for checking the email existance*/ 
      function check($email)

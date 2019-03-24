@@ -10,7 +10,24 @@ class Authentication_model extends CI_Model
          
           if($query->num_rows() > 0)  
           {  
-               return true;  
+               
+               $this->db->select('date');
+               $this->db->where('id', $id); 
+               $this->db->from('login1');
+               $query = $this->db->get();
+               $date = $query->result_array();
+               $exp_date=$date[0]['date'];
+               $currentdate=date('Y-m-d');
+             if($currentdate<$exp_date)
+             {
+               // $query1=$this->db->query("select name,email,place from login1 where id=".$id);
+               return TRUE;
+               
+             }
+             else
+             {
+                  return false;
+             }    
           }  
           else  
           {  
@@ -27,12 +44,12 @@ class Authentication_model extends CI_Model
           $query = $this->db->get();
           $id = $query->result_array();
           $id1=$id[0]['id'];
-                   
+          
           $data=array(
                'id'=>$id1,
                'token'=>$token   
           );
-                     
+
           $this->db->insert('authtoken1',$data);
           return true;
      }
@@ -43,6 +60,40 @@ class Authentication_model extends CI_Model
          $query =$this->db->query("select id,name,email,place from login1");
          return $query->result_array();
      }
+
+     function update_data($id,$data)
+     {
+    
+          $this->db->where('id',$id);
+          $query=$this->db->get('login1');
+          if($query->num_rows()>0)
+          {
+
+               $this->db->select('date');
+               $this->db->where('id', $id); 
+               $this->db->from('login1');
+               $query = $this->db->get();
+               $date = $query->result_array();
+               $exp_date=$date[0]['date'];
+               $currentdate=date('Y-m-d');
+             if($currentdate<$exp_date)
+             {
+               // $query1=$this->db->query("select name,email,place from login1 where id=".$id);
+               $this->db->where('id',$id);
+               $update_result=$this->db->update('login1', $data);
+               return TRUE;
+               
+             }
+             else
+             {
+                  return false;
+             }   
+          }
+          else
+          {
+               return false;
+          }
+     }
      /* function for display records*/ 
      function displayrecords($token)
      {
@@ -52,6 +103,41 @@ class Authentication_model extends CI_Model
           {
           $query1=$this->db->query("select name,email,place from login1");
           return $query1->result();
+          }
+          else 
+          {
+               return false;
+          }
+     }
+     function user($id)
+     {
+         
+          $this->db->where('id',$id);
+          $query=$this->db->get('login1');
+          if($query->num_rows()>0)
+          {
+               $this->db->select('date');
+               $this->db->where('id', $id); 
+               $this->db->from('login1');
+               $query = $this->db->get();
+               $date = $query->result_array();
+               $exp_date=$date[0]['date'];
+               $currentdate=date('Y-m-d');
+             if($currentdate<$exp_date)
+             {
+               // $query1=$this->db->query("select name,email,place from login1 where id=".$id);
+               $this->db->select('name');
+               $this->db->select('email');
+               $this->db->select('place');
+               $this->db->where('id',$id);
+               $query=$this->db->get('login1');
+               return $query->result();
+               
+             }
+             else
+             {
+                  return false;
+             }
           }
           else 
           {
@@ -77,6 +163,24 @@ class Authentication_model extends CI_Model
      {  
           $this->db->insert('login1', $data);
           return true;
+     }
+     function logout($token)
+     {
+          // $this->db->where('token', $token);   
+      
+          $this->db->where('token', $token);
+          $query=$this->db->get('authtoken1');
+          if($query->num_rows()>0)
+          {
+          $this->db->where('token', $token);
+          $this->db->delete('authtoken1') ;
+          return true;
+          }
+          else 
+          {
+               return false;
+          }     
+     
      }
 }
 ?>

@@ -46,17 +46,24 @@ class Authentication extends CI_Controller {
     /* function for login validation*/     
      function login_validation()  
      {   
-              
-          $email = $this->input->post('email');  
-          $password = $this->input->post('password');   
+         /**getting input as post method */
+          // $email = $this->input->post('email');  
+          // $password = $this->input->post('password');   
+
+          /*getting input as json format */
+          $json=json_decode(file_get_contents('php://input'),true);   
+          $email=$json['email'];
+          $password=$json['password'];
           $ep=hash('sha256', $password);
           $token = bin2hex(openssl_random_pseudo_bytes(16));
           $this->load->model('authentication_model');
 
           if($this->authentication_model->can_login($email, $ep))  
           {  
+               // print_r("dfffffg");
+               // die();
                 /* function call for Adding token into table when user logged in and registered*/ 
-               $tokentable= $this->authentication_model->addToken($email, $ep,$token);
+               $tokentable= $this->emp->addToken($email, $ep,$token);
                $details=array(
                'token'=>$token);
                echo json_encode($details);
@@ -126,7 +133,7 @@ class Authentication extends CI_Controller {
           else
           {
                // $err=array(
-               //      'error_code'=>"400",
+               //        'error_code'=>"400",
                //      'error_message'=>"bad request"
                // );
                // echo json_encode($err);
@@ -187,9 +194,30 @@ class Authentication extends CI_Controller {
                 echo json_encode($err);  
                }
      }
+     public   function getAuthorizationHeader(){
+          $headers = null;
+          if (isset($_SERVER['Authorization'])) {
+              $headers = trim($_SERVER["Authorization"]);
+          }
+          else if (isset($_SERVER['HTTP_AUTHORIZATION'])) { //Nginx or fast CGI
+              $headers = trim($_SERVER["HTTP_AUTHORIZATION"]);
+          } elseif (function_exists('apache_request_headers')) {
+              $requestHeaders = apache_request_headers();
+              // Server-side fix for bug in old Android versions (a nice side-effect of this fix means we don't care about capitalization for Authorization)
+              $requestHeaders = array_combine(array_map('ucwords', array_keys($requestHeaders)), array_values($requestHeaders));
+              //print_r($requestHeaders);
+              if (isset($requestHeaders['Authorization'])) {
+                  $headers = trim($requestHeaders['Authorization']);
+              }
+          }
+          return $headers;
+      }
+
      public function dispdata()
      {
-              $token=$this->input->post('token'); 
+              $token1=$this->getAuthorizationHeader();
+              preg_match('/Bearer\s(\S+)/', $token1, $matches) ;
+             $token=$matches[1];
          
                /* function for display records*/ 
                $result=$this->emp->displayrecords($token);
@@ -207,6 +235,9 @@ class Authentication extends CI_Controller {
                }
                
       }
+
+
+  
       function logout()
       {
          $token=$this->input->post('token');

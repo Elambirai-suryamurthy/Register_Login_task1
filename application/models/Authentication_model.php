@@ -2,17 +2,20 @@
 class Authentication_model extends CI_Model  
 {  
      /* function for login validation*/ 
-     function can_login($name, $password)  
+     function can_login($email, $ep)  
      {  
-          $this->db->where('email', $name);  
-          $this->db->where('password', $password);  
+          // print_r($ep);
+          // print_r($email);
+          // die();
+          $this->db->where('email', $email);  
+          $this->db->where('password', $ep);  
           $query = $this->db->get('login1');  
          
           if($query->num_rows() > 0)  
           {  
                
                $this->db->select('date');
-               $this->db->where('id', $id); 
+               $this->db->where('email', $email); 
                $this->db->from('login1');
                $query = $this->db->get();
                $date = $query->result_array();
@@ -111,7 +114,8 @@ class Authentication_model extends CI_Model
      }
      function user($id)
      {
-         
+     //     echo $id;
+     //     die();
           $this->db->where('id',$id);
           $query=$this->db->get('login1');
           if($query->num_rows()>0)
@@ -134,15 +138,16 @@ class Authentication_model extends CI_Model
                return $query->result();
                
              }
-             else
-             {
-                  return false;
-             }
-          }
-          else 
-          {
-               return false;
-          }
+               else
+               {
+                    return false;
+               }
+               }
+          
+               else 
+               {
+                    return false;
+               }
      }
      /* function for checking the email existance*/ 
      function check($email)
